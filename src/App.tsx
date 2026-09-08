@@ -12,12 +12,32 @@ import { DoctorPrescriptionReviewView } from './components/views/DoctorPrescript
 import { GlobalPlatformOperationsView } from './components/views/GlobalPlatformOperationsView';
 import { PatientMobileApp } from './components/mobile/PatientMobileApp';
 import { PrdViewerModal } from './components/docs/PrdViewerModal';
+import { UnifiedAuthPage } from './components/auth/UnifiedAuthPage';
+import { DEFAULT_USERS } from './data/mockData';
+import { UserProfile } from './types';
 
 export default function App() {
-  const [activeMode, setActiveMode] = useState<'enterprise' | 'mobile' | 'prd'>('enterprise');
+  const [activeMode, setActiveMode] = useState<'enterprise' | 'mobile' | 'auth' | 'prd'>('enterprise');
   const [currentView, setCurrentView] = useState<string>('dispensary');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(DEFAULT_USERS.admin);
+  const [initialAuthTab, setInitialAuthTab] = useState<'doctor' | 'patient' | 'pharmacy'>('doctor');
+
+  const handleOpenAuth = (portalTab?: 'doctor' | 'patient' | 'pharmacy') => {
+    if (portalTab) {
+      setInitialAuthTab(portalTab);
+    }
+    setActiveMode('auth');
+  };
+
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
@@ -29,6 +49,9 @@ export default function App() {
         onSelectMode={setActiveMode}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        currentUser={currentUser}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
       />
 
       {/* Main Layout Body */}
@@ -40,6 +63,8 @@ export default function App() {
             onSelectView={setCurrentView}
             isOpenMobile={mobileMenuOpen}
             onCloseMobile={() => setMobileMenuOpen(false)}
+            currentUser={currentUser}
+            onOpenAuth={handleOpenAuth}
           />
 
           {/* Main Content Area */}
@@ -113,12 +138,22 @@ export default function App() {
               </div>
 
               {/* Dynamic View Rendering */}
-              {currentView === 'dispensary' && <DispensaryMatrixView />}
+              {currentView === 'dispensary' && (
+                <DispensaryMatrixView
+                  currentUser={currentUser}
+                  onLoginSuccess={handleLoginSuccess}
+                />
+              )}
               {currentView === 'price-comparison' && <PriceComparisonEngineView />}
               {currentView === 'doctor-prescriptions' && <DoctorPrescriptionReviewView />}
               {currentView === 'multi-tenant' && <GlobalPlatformOperationsView />}
               {currentView === 'catalog' && <PriceComparisonEngineView />}
-              {currentView === 'fulfillment' && <DispensaryMatrixView />}
+              {currentView === 'fulfillment' && (
+                <DispensaryMatrixView
+                  currentUser={currentUser}
+                  onLoginSuccess={handleLoginSuccess}
+                />
+              )}
               {currentView === 'settlement' && <GlobalPlatformOperationsView />}
               {currentView === 'tenant-schemas' && <GlobalPlatformOperationsView />}
               {currentView === 'audit-logs' && <GlobalPlatformOperationsView />}
@@ -139,11 +174,28 @@ export default function App() {
               Wholesale Generic Medicine Marketplace
             </h2>
             <p className="text-xs text-[#525f75]">
-              Includes Patient Discovery, 90% Generic Price Comparison, and Smart Optical Scanner with OCR.
+              Includes Patient Discovery, 90% Generic Price Comparison, Smart Optical Scanner with OCR, and Patient Login & Registration.
             </p>
           </div>
 
-          <PatientMobileApp />
+          <PatientMobileApp
+            currentUser={currentUser}
+            onLoginSuccess={handleLoginSuccess}
+            onLogout={handleLogout}
+          />
+        </div>
+      )}
+
+      {/* Dedicated Login & Registration Mode across Three Frontend Portals */}
+      {activeMode === 'auth' && (
+        <div className="pt-20 pb-16 px-4 sm:px-6">
+          <UnifiedAuthPage
+            currentUser={currentUser}
+            onLoginSuccess={handleLoginSuccess}
+            onLogout={handleLogout}
+            onNavigateToPortal={(mode) => setActiveMode(mode)}
+            initialTab={initialAuthTab}
+          />
         </div>
       )}
 

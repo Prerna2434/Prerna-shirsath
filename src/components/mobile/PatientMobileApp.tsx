@@ -1,15 +1,38 @@
 import React, { useState } from 'react';
-import { ASSETS, COMPETING_PHARMACIES } from '../../data/mockData';
+import { ASSETS, COMPETING_PHARMACIES, DEFAULT_USERS } from '../../data/mockData';
+import { UserProfile } from '../../types';
 import { MobileScanner } from './MobileScanner';
+import { PatientAuth } from '../auth/PatientAuth';
 
-export const PatientMobileApp: React.FC = () => {
+interface PatientMobileAppProps {
+  currentUser?: UserProfile | null;
+  onLoginSuccess?: (user: UserProfile) => void;
+  onLogout?: () => void;
+}
+
+export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
+  currentUser: parentUser,
+  onLoginSuccess,
+  onLogout
+}) => {
   const [activeTab, setActiveTab] = useState<'home' | 'compare' | 'scanner' | 'orders' | 'profile'>('home');
+  const [localUser, setLocalUser] = useState<UserProfile | null>(parentUser || DEFAULT_USERS.patient);
+  const currentUser = parentUser !== undefined ? parentUser : localUser;
+
   const [selectedDosage, setSelectedDosage] = useState<'10mg' | '20mg' | '40mg' | '80mg'>('20mg');
   const [selectedQuantity, setSelectedQuantity] = useState<'30' | '90'>('30');
   const [selectedPharmacyRank, setSelectedPharmacyRank] = useState<number>(1);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showFaq, setShowFaq] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handlePatientAuthSuccess = (u: UserProfile) => {
+    setLocalUser(u);
+    if (onLoginSuccess) onLoginSuccess(u);
+    setShowAuthModal(false);
+  };
+
 
   const categories = ['All', 'Cholesterol', 'Blood Pressure', 'Diabetes', 'Antibiotics', 'Anxiety'];
 
@@ -62,7 +85,20 @@ export const PatientMobileApp: React.FC = () => {
           >
             <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
           </button>
-          <div className="relative p-1.5 text-[#525f75]">
+          
+          <button
+            onClick={() => setActiveTab('profile')}
+            className="flex items-center gap-1 p-0.5 rounded-full ring-2 ring-[#006b53]/30 hover:opacity-90 transition-opacity"
+            title="Patient Account / Sign In"
+          >
+            <img
+              src={currentUser?.avatar || DEFAULT_USERS.patient.avatar}
+              alt="Patient Profile"
+              className="w-7 h-7 rounded-full object-cover"
+            />
+          </button>
+
+          <div className="relative p-1 text-[#525f75]">
             <span className="material-symbols-outlined text-[20px]">notifications</span>
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#ba1a1a]"></span>
           </div>
@@ -466,11 +502,160 @@ export const PatientMobileApp: React.FC = () => {
                 <button
                   onClick={() => {
                     setOrderConfirmed(false);
-                    setActiveTab('home');
+                    setActiveTab('orders');
                   }}
                   className="w-full py-2 bg-[#006b53] text-white rounded-xl text-xs font-bold"
                 >
-                  Back to Home
+                  View My Orders
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Screen 3: Patient Orders View */}
+      {activeTab === 'orders' && (
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-20">
+          <div className="flex items-center justify-between pb-2 border-b border-[#eff4ff]">
+            <h3 className="font-bold text-sm text-[#0b1c30]">Active & Past Prescriptions</h3>
+            <span className="text-[11px] text-[#006b53] font-semibold">2 Active Deliveries</span>
+          </div>
+
+          <div className="space-y-3">
+            <div className="p-3.5 bg-[#f8f9ff] rounded-2xl border border-[#e5eeff] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded bg-[#006c4a]/10 text-[#006c4a] text-[10px] font-bold uppercase">
+                  Out For Delivery • 24 Min
+                </span>
+                <span className="text-xs font-bold text-[#0b1c30]">$9.20</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-[#0b1c30]">Atorvastatin Calcium 20mg (30 Tablets)</p>
+                <p className="text-[11px] text-[#525f75]">Filled by Metro Health Central Rx • Courier: DoorDash Rx</p>
+              </div>
+              <div className="pt-2 border-t border-[#e5eeff] flex justify-between items-center text-[11px]">
+                <span className="text-[#006c4a] font-semibold">Saved $78.80 vs Brand</span>
+                <button
+                  onClick={() => setActiveTab('home')}
+                  className="text-[#006b53] font-bold hover:underline"
+                >
+                  Order Refill
+                </button>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-[#f8f9ff] rounded-2xl border border-[#e5eeff] space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded bg-[#eff4ff] text-[#525f75] text-[10px] font-bold uppercase">
+                  Delivered • Sep 02
+                </span>
+                <span className="text-xs font-bold text-[#0b1c30]">$7.20</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-[#0b1c30]">Metformin ER 500mg (60 Tablets)</p>
+                <p className="text-[11px] text-[#525f75]">Filled by CareFirst Pharmacy Hub #402</p>
+              </div>
+              <div className="pt-2 border-t border-[#e5eeff] flex justify-between items-center text-[11px]">
+                <span className="text-[#006c4a] font-semibold">Saved $64.80 vs Brand</span>
+                <span className="text-[#525f75]">Next refill in 18 days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Screen 4: Patient Profile & Authentication Screen */}
+      {activeTab === 'profile' && (
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-20">
+          {showAuthModal || !currentUser ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#525f75] uppercase">
+                  Patient Portal Login / Register
+                </span>
+                {currentUser && (
+                  <button
+                    onClick={() => setShowAuthModal(false)}
+                    className="text-xs text-[#006b53] font-semibold"
+                  >
+                    Back to Profile
+                  </button>
+                )}
+              </div>
+              <PatientAuth
+                onSuccess={handlePatientAuthSuccess}
+                onClose={() => setShowAuthModal(false)}
+              />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Authenticated Patient Card */}
+              <div className="p-4 bg-gradient-to-br from-[#eff4ff] to-[#f8f9ff] rounded-2xl border border-[#dce9ff] space-y-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-[#006b53]/30 shadow-xs"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="font-bold text-base text-[#0b1c30]">{currentUser.name}</h3>
+                      <span className="px-2 py-0.2 rounded-full bg-[#006b53] text-white text-[9px] font-bold uppercase">
+                        Verified
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#525f75]">{currentUser.email}</p>
+                    <p className="text-xs text-[#006c4a] font-semibold">{currentUser.phone || '(415) 555-0192'}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#dce9ff] text-center">
+                  <div className="p-2 bg-white rounded-xl border border-[#e5eeff]">
+                    <span className="text-[10px] text-[#525f75] uppercase font-bold block">Lifetime Savings</span>
+                    <span className="font-bold text-base text-[#006c4a]">$418.20</span>
+                  </div>
+                  <div className="p-2 bg-white rounded-xl border border-[#e5eeff]">
+                    <span className="text-[10px] text-[#525f75] uppercase font-bold block">Generic Prescriptions</span>
+                    <span className="font-bold text-base text-[#0b1c30]">4 Active</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Patient Details & Address */}
+              <div className="p-3.5 bg-white rounded-2xl border border-[#e5eeff] space-y-2 text-xs">
+                <span className="font-bold uppercase tracking-wider text-[10px] text-[#525f75] block">
+                  Delivery Destination
+                </span>
+                <p className="font-semibold text-[#0b1c30] flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">home_pin</span>
+                  {currentUser.address || '742 Mission St, Apt 4B, San Francisco, CA 94107'}
+                </p>
+                <p className="text-[11px] text-[#525f75]">
+                  Insurance: {currentUser.insuranceProvider || 'BlueShield California (RxBIN: 004336)'}
+                </p>
+              </div>
+
+              {/* Switch Account or Register Another Button */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="w-full py-2.5 bg-[#eff4ff] hover:bg-[#dce9ff] text-[#006b53] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">switch_account</span>
+                  <span>Sign In as Different Patient or Register New Account</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setLocalUser(null);
+                    if (onLogout) onLogout();
+                    setShowAuthModal(true);
+                  }}
+                  className="w-full py-2 text-[#ba1a1a] hover:bg-[#ffdad6]/30 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">logout</span>
+                  <span>Sign Out of Patient App</span>
                 </button>
               </div>
             </div>
@@ -510,16 +695,20 @@ export const PatientMobileApp: React.FC = () => {
         </button>
 
         <button
-          onClick={() => setActiveTab('home')}
-          className="flex flex-col items-center gap-1 text-[#525f75] hover:text-[#0b1c30]"
+          onClick={() => setActiveTab('orders')}
+          className={`flex flex-col items-center gap-1 ${
+            activeTab === 'orders' ? 'text-[#006b53]' : 'text-[#525f75]'
+          }`}
         >
           <span className="material-symbols-outlined text-[20px]">receipt_long</span>
           <span className="text-[10px] font-semibold">Orders</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('home')}
-          className="flex flex-col items-center gap-1 text-[#525f75] hover:text-[#0b1c30]"
+          onClick={() => setActiveTab('profile')}
+          className={`flex flex-col items-center gap-1 ${
+            activeTab === 'profile' ? 'text-[#006b53]' : 'text-[#525f75]'
+          }`}
         >
           <span className="material-symbols-outlined text-[20px]">person</span>
           <span className="text-[10px] font-semibold">Account</span>

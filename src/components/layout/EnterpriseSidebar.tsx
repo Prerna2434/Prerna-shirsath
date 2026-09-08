@@ -1,17 +1,22 @@
 import React from 'react';
+import { UserProfile } from '../../types';
 
 interface EnterpriseSidebarProps {
   currentView: string;
   onSelectView: (view: string) => void;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
+  currentUser?: UserProfile | null;
+  onOpenAuth?: (portal?: 'doctor' | 'patient' | 'pharmacy') => void;
 }
 
 export const EnterpriseSidebar: React.FC<EnterpriseSidebarProps> = ({
   currentView,
   onSelectView,
   isOpenMobile,
-  onCloseMobile
+  onCloseMobile,
+  currentUser,
+  onOpenAuth
 }) => {
   const mainManagementNav = [
     { id: 'multi-tenant', label: 'Multi-Tenant Overview', icon: 'hub' },
@@ -165,6 +170,33 @@ export const EnterpriseSidebar: React.FC<EnterpriseSidebarProps> = ({
             </nav>
           </div>
         </div>
+
+        {/* Portal Sign In / Account Access Card */}
+        {onOpenAuth && (
+          <div className="mx-2 mb-2 p-2.5 bg-[#eff4ff] rounded-xl border border-[#dce9ff]">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#525f75]">
+                Account Access
+              </span>
+              <span className="px-1.5 py-0.2 rounded bg-[#006b53] text-white text-[9px] font-bold">
+                {currentUser?.role || 'Guest'}
+              </span>
+            </div>
+            <p className="font-bold text-xs text-[#0b1c30] truncate">
+              {currentUser?.name || 'Sign In or Register'}
+            </p>
+            <p className="text-[10px] text-[#525f75] truncate mb-2">
+              {currentUser?.roleTitle || 'Doctor, Patient & Pharmacy Login'}
+            </p>
+            <button
+              onClick={() => onOpenAuth('doctor')}
+              className="w-full py-1.5 bg-[#006b53] hover:bg-[#00513e] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+            >
+              <span className="material-symbols-outlined text-[14px]">passkey</span>
+              <span>{currentUser ? 'Switch / Manage Account' : 'Sign In / Register'}</span>
+            </button>
+          </div>
+        )}
 
         {/* Bottom Infrastructure Heartbeat Status */}
         <div className="p-3 bg-[#eff4ff] m-2 rounded-lg border border-[#e5eeff] flex items-center justify-between">

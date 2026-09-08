@@ -1,17 +1,37 @@
 import React, { useState } from 'react';
-import { ASSETS, INITIAL_DISPENSARY_STOCK, INITIAL_LIVE_ORDERS } from '../../data/mockData';
-import { DispensaryStockItem, DispensaryOrder } from '../../types';
+import { ASSETS, INITIAL_DISPENSARY_STOCK, INITIAL_LIVE_ORDERS, DEFAULT_USERS } from '../../data/mockData';
+import { DispensaryStockItem, DispensaryOrder, UserProfile } from '../../types';
+import { PharmacyDispensaryAuth } from '../auth/PharmacyDispensaryAuth';
 
-export const DispensaryMatrixView: React.FC = () => {
+interface DispensaryMatrixViewProps {
+  currentUser?: UserProfile | null;
+  onLoginSuccess?: (user: UserProfile) => void;
+}
+
+export const DispensaryMatrixView: React.FC<DispensaryMatrixViewProps> = ({
+  currentUser: initialUser,
+  onLoginSuccess
+}) => {
   const [stockItems, setStockItems] = useState<DispensaryStockItem[]>(INITIAL_DISPENSARY_STOCK);
   const [orders, setOrders] = useState<DispensaryOrder[]>(INITIAL_LIVE_ORDERS);
   const [searchTerm, setSearchTerm] = useState('');
   const [syncedTime, setSyncedTime] = useState('11:42:19 EST');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [activePharmacist, setActivePharmacist] = useState<UserProfile>(
+    initialUser?.role === 'pharmacist' ? initialUser : DEFAULT_USERS.pharmacist
+  );
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handlePharmacyAuthSuccess = (u: UserProfile) => {
+    setActivePharmacist(u);
+    if (onLoginSuccess) onLoginSuccess(u);
+    setShowAuthModal(false);
+    showToast(`Dispensary authenticated: ${u.organization || 'CareFirst Pharmacy'} (${u.name})`);
   };
 
   const handleMatchPrice = (itemId: string) => {
@@ -74,22 +94,32 @@ export const DispensaryMatrixView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-4 border-t sm:border-t-0 pt-3 sm:pt-0 border-[#e5eeff]">
+        <div className="flex items-center gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-[#e5eeff] flex-wrap">
           <div className="flex items-center gap-3 bg-[#eff4ff] px-3.5 py-2 rounded-xl border border-[#dce9ff]">
             <img
-              src={ASSETS.pharmacistMarcus}
-              alt="Pharmacist Marcus Vance"
+              src={activePharmacist.avatar || ASSETS.pharmacistMarcus}
+              alt={activePharmacist.name}
               className="w-10 h-10 rounded-full object-cover ring-2 ring-[#00a884]/30"
             />
             <div>
               <p className="font-label-md text-xs font-bold text-[#0b1c30]">
-                Marcus Vance, PharmD
+                {activePharmacist.name}
               </p>
               <p className="font-label-sm text-[11px] text-[#006c4a] font-medium">
-                Lic #PH-88912 • On Duty
+                {activePharmacist.licenseOrNpi || 'Lic #PH-88912'} • On Duty
               </p>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowAuthModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#ffffff] hover:bg-[#eff4ff] text-[#006b53] border border-[#006b53]/30 rounded-xl font-label-md text-xs font-semibold shadow-xs transition-colors"
+            title="Dispensary Terminal Login & Registration"
+          >
+            <span className="material-symbols-outlined text-[16px]">passkey</span>
+            <span>Switch / Register Branch</span>
+          </button>
+
           <button
             onClick={handleSyncTerminal}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#006b53] hover:bg-[#00513e] text-[#ffffff] rounded-xl font-label-md text-xs font-semibold shadow-sm transition-colors"
@@ -99,6 +129,24 @@ export const DispensaryMatrixView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Pharmacy Dispensary Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+            <PharmacyDispensaryAuth
+              onSuccess={handlePharmacyAuthSuccess}
+              onClose={() => setShowAuthModal(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* 4 Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

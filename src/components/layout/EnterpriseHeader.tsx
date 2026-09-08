@@ -1,21 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ASSETS } from '../../data/mockData';
+import { UserProfile } from '../../types';
 
 interface EnterpriseHeaderProps {
   currentView: string;
   onSelectView: (view: string) => void;
-  activeMode: 'enterprise' | 'mobile' | 'prd';
-  onSelectMode: (mode: 'enterprise' | 'mobile' | 'prd') => void;
+  activeMode: 'enterprise' | 'mobile' | 'auth' | 'prd';
+  onSelectMode: (mode: 'enterprise' | 'mobile' | 'auth' | 'prd') => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+  currentUser?: UserProfile | null;
+  onOpenAuth?: (portal?: 'doctor' | 'patient' | 'pharmacy') => void;
+  onLogout?: () => void;
 }
 
 export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
   activeMode,
   onSelectMode,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  currentUser,
+  onOpenAuth,
+  onLogout
 }) => {
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
   return (
     <header className="fixed top-0 left-0 lg:left-[16.25rem] right-0 h-16 bg-[#ffffff]/95 backdrop-blur-xl z-40 px-4 sm:px-6 flex items-center justify-between border-b border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="flex items-center gap-4 lg:gap-6">
@@ -70,6 +79,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
             <span className="material-symbols-outlined text-[16px]">desktop_windows</span>
             <span className="hidden sm:inline">Enterprise Hub</span>
           </button>
+
           <button
             onClick={() => onSelectMode('mobile')}
             className={`px-3 py-1 rounded-lg font-label-sm text-[12px] font-semibold transition-all flex items-center gap-1.5 ${
@@ -80,8 +90,22 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
             title="Patient Mobile App with Smart Scanner"
           >
             <span className="material-symbols-outlined text-[16px]">smartphone</span>
-            <span className="hidden sm:inline">Patient App & Scanner</span>
+            <span className="hidden sm:inline">Patient App</span>
           </button>
+
+          <button
+            onClick={() => onSelectMode('auth')}
+            className={`px-2.5 py-1 rounded-lg font-label-sm text-[12px] font-semibold transition-all flex items-center gap-1.5 ${
+              activeMode === 'auth'
+                ? 'bg-[#006b53] text-[#ffffff] shadow-sm'
+                : 'text-[#525f75] hover:text-[#0b1c30]'
+            }`}
+            title="Login & Registration Across 3 Frontend Pages"
+          >
+            <span className="material-symbols-outlined text-[16px]">passkey</span>
+            <span className="hidden md:inline">Sign In / Register</span>
+          </button>
+
           <button
             onClick={() => onSelectMode('prd')}
             className={`px-2.5 py-1 rounded-lg font-label-sm text-[12px] font-semibold transition-all flex items-center gap-1.5 ${
@@ -92,7 +116,7 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
             title="Industry-Level PRD Document"
           >
             <span className="material-symbols-outlined text-[16px]">description</span>
-            <span className="hidden md:inline">PRD Docs</span>
+            <span className="hidden lg:inline">PRD Docs</span>
           </button>
         </div>
 
@@ -119,23 +143,98 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#ba1a1a]"></span>
         </button>
 
-        {/* User profile */}
-        <div className="flex items-center gap-2 pl-1 border-l border-[#e5eeff]">
-          <div className="text-right hidden xl:block">
-            <p className="font-label-md text-[12px] font-semibold text-[#0b1c30] leading-tight">
-              Dr. Evelyn Vance
-            </p>
-            <p className="font-label-sm text-[11px] text-[#525f75] leading-tight">
-              Chief Platform Admin
-            </p>
-          </div>
-          <img
-            src={ASSETS.drEvelynVance}
-            alt="Dr. Evelyn Vance"
-            className="w-8 h-8 rounded-full object-cover shadow-sm ring-1 ring-[#e5eeff]"
-          />
+        {/* User profile with Interactive Dropdown / Switcher */}
+        <div className="relative pl-1 border-l border-[#e5eeff]">
+          <button
+            type="button"
+            onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            className="flex items-center gap-2 text-left hover:opacity-90 transition-opacity p-1 rounded-xl hover:bg-[#eff4ff]"
+          >
+            <div className="text-right hidden xl:block">
+              <p className="font-label-md text-[12px] font-semibold text-[#0b1c30] leading-tight">
+                {currentUser?.name || 'Guest Provider'}
+              </p>
+              <p className="font-label-sm text-[11px] text-[#525f75] leading-tight">
+                {currentUser?.roleTitle || 'Click to Sign In / Register'}
+              </p>
+            </div>
+            <img
+              src={currentUser?.avatar || ASSETS.drEvelynVance}
+              alt={currentUser?.name || 'Provider Profile'}
+              className="w-8 h-8 rounded-full object-cover shadow-sm ring-2 ring-[#006b53]/30"
+            />
+          </button>
+
+          {/* Dropdown Menu */}
+          {profileDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#e5eeff] p-3 space-y-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="pb-2 border-b border-[#eff4ff]">
+                <p className="font-bold text-xs text-[#0b1c30]">{currentUser?.name || 'Guest Clinician'}</p>
+                <p className="text-[11px] text-[#525f75]">{currentUser?.email || 'Not authenticated'}</p>
+                {currentUser?.licenseOrNpi && (
+                  <p className="text-[10px] text-[#006c4a] font-semibold mt-0.5">{currentUser.licenseOrNpi}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-[#525f75] px-1">Switch Portal / Account:</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    onOpenAuth?.('doctor');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0b1c30] hover:bg-[#eff4ff] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">clinical_notes</span>
+                  <span>Doctor / Clinician Login</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    onOpenAuth?.('patient');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0b1c30] hover:bg-[#eff4ff] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">smartphone</span>
+                  <span>Patient Mobile Login</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    onOpenAuth?.('pharmacy');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0b1c30] hover:bg-[#eff4ff] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">local_pharmacy</span>
+                  <span>Dispensary Store Login</span>
+                </button>
+              </div>
+
+              {currentUser && onLogout && (
+                <div className="pt-2 border-t border-[#eff4ff]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      onLogout();
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-bold text-[#ba1a1a] hover:bg-[#ffdad6]/40 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">logout</span>
+                    <span>Sign Out Current User</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 };
+

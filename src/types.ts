@@ -123,3 +123,22 @@ export interface CompetingPharmacy {
   isDefault?: boolean;
   isBrandOnly?: boolean;
 }
+
+export type UserRole = 'doctor' | 'pharmacist' | 'patient' | 'admin';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  roleTitle: string;
+  tenantId?: string;
+  tenantName?: string;
+  organization?: string;
+  licenseOrNpi?: string;
+  avatar: string;
+  phone?: string;
+  address?: string;
+  insuranceProvider?: string;
+}
+

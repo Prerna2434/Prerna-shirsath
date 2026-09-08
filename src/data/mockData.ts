@@ -4,8 +4,46 @@ import {
   DispensaryStockItem,
   DispensaryOrder,
   PrescriptionCase,
-  CompetingPharmacy
+  CompetingPharmacy,
+  UserProfile
 } from '../types';
+
+export const DEFAULT_USERS: Record<string, UserProfile> = {
+  admin: {
+    id: 'user-evelyn',
+    name: 'Dr. Evelyn Vance, MD',
+    email: 'evelyn.vance@metrohealth.org',
+    role: 'admin',
+    roleTitle: 'Chief Platform Admin & Medical Director',
+    tenantId: 'tenant_082',
+    tenantName: 'Metro Health Network',
+    licenseOrNpi: 'NPI: 1043928110 • CA Lic: #C52910',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBFCfPKkB2BWjyQ-UFGa_AGt2LDjt6uMda4zSVzMk003H7PkkoIAzlu0EELvhfojYlymmuHI9Dx_fScl8hcC_3RaSGReUcHiiKO5iyNQF_8kCXwSS0qNr6WLk6vSatLeONFZFQ0NMR8fOSJSYHpZnsUR2dntDBQ-ihdu6DdsayY-OGdhxUDMup6bpnc4sMng3ENjFwYxxBbfWBBikuxpGMlb_9DDGGqgKuS2ZcsnMHoKESOGVpcd3VYsQ'
+  },
+  pharmacist: {
+    id: 'user-marcus',
+    name: 'Marcus Vance, PharmD',
+    email: 'm.vance@carefirstrx.com',
+    role: 'pharmacist',
+    roleTitle: 'Supervising Dispensary Pharmacist',
+    tenantId: 'tenant_carefirst_402',
+    tenantName: 'CareFirst Pharmacy Network #402',
+    licenseOrNpi: 'RPh Lic: #PH-88912 • DEA: #BC-9920149',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgqIKKJmkC-BDaRqeUIHYTGVhd11q8Rf4uxEZMzQbF3AFJVSWtklYi2bYl5ID7PL5pPKqrdce0J3TREg7OFKfIGEmsOTZR8ajJRkXC6tgJMZsqGpFv2bH3_kRV704IWR2zPSLEbPXrNgIF9lsWqDyrk5MSE1v47FEyN1nB6AEi4DAwzcNeOgtF2ro9kqjMLDf56eH6KPUc_5cR952aBBzwJVIYeTyv96yBMXTzey4RilXkPg_8HKyzpA'
+  },
+  patient: {
+    id: 'user-robert',
+    name: 'Robert Chen',
+    email: 'robert.chen@gmail.com',
+    phone: '(415) 555-0192',
+    role: 'patient',
+    roleTitle: 'Chronic Care Patient',
+    address: '742 Mission St, Apt 4B, San Francisco, CA 94107',
+    insuranceProvider: 'BlueShield California (RxBIN: 004336)',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+  }
+};
+
 
 export const ASSETS = {
   // Brand logo
