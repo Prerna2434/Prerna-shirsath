@@ -1,0 +1,6 @@
+{
+  "name": "GeneticMedicine - Medicine Price Comparison & Pharmacy Platform",
+  "description": "Online medicine marketplace comparing prices across pharmacies, highlighting lowest generic prices, doctor e-prescription review, and dispensary matrix.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
