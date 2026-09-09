@@ -22,9 +22,54 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+        working-directory: frontend
       - name: Run automated tests
         run: npm test
+        working-directory: frontend
       - name: Type-check source
         run: npm run lint
+        working-directory: frontend
       - name: Build production bundle
         run: npm run build -- --base=/Prerna-shirsath/
+        working-directory: frontend
+      - name: Check performance budget
+        working-directory: frontend
+        run: |
+          # Budgets: JS ≤ 150 kB gzip, CSS ≤ 20 kB gzip
+          JS_BUDGET_BYTES=153600
+          CSS_BUDGET_BYTES=20480
+
+          JS_FILE=$(ls dist/assets/index-*.js 2>/dev/null | head -n 1)
+          CSS_FILE=$(ls dist/assets/index-*.css 2>/dev/null | head -n 1)
+
+          if [ -z "$JS_FILE" ] || [ -z "$CSS_FILE" ]; then
+            echo "ERROR: Could not find expected JS or CSS asset in dist/assets/"
+            exit 1
+          fi
+
+          JS_GZIP=$(gzip -c "$JS_FILE" | wc -c)
+          CSS_GZIP=$(gzip -c "$CSS_FILE" | wc -c)
+
+          echo "JS  bundle: ${JS_GZIP} bytes gzip (budget: ${JS_BUDGET_BYTES})"
+          echo "CSS bundle: ${CSS_GZIP} bytes gzip (budget: ${CSS_BUDGET_BYTES})"
+
+          FAIL=0
+          if [ "$JS_GZIP" -gt "$JS_BUDGET_BYTES" ]; then
+            echo "FAIL: JS bundle exceeds budget by $((JS_GZIP - JS_BUDGET_BYTES)) bytes"
+            FAIL=1
+          fi
+          if [ "$CSS_GZIP" -gt "$CSS_BUDGET_BYTES" ]; then
+            echo "FAIL: CSS bundle exceeds budget by $((CSS_GZIP - CSS_BUDGET_BYTES)) bytes"
+            FAIL=1
+          fi
+          [ "$FAIL" -eq 0 ] && echo "OK: Both bundles within budget"
+          exit $FAIL
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend
+      - name: Test backend
+        run: npm test
+        working-directory: backend
+      - name: Type-check backend
+        run: npm run lint
+        working-directory: backend

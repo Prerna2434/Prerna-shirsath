@@ -1,0 +1,84 @@
+name: Bug report
+description: Report a reproducible defect. Do not include personal or health information.
+title: '[Bug]: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Privacy reminder**: Do not include a prescription, diagnosis, patient name,
+        contact details, or any other personal health information. This is a public issue tracker.
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected area
+      options:
+        - Executive Dashboard
+        - Dispensary Matrix
+        - Price Comparison Engine
+        - Doctor E-Prescription Review
+        - Multi-Tenant Operations
+        - Patient Mobile App
+        - Clinical AI Assistant
+        - Auth / Login
+        - Settings
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How badly does this affect your workflow?
+      options:
+        - Critical — app crashes or data is incorrect
+        - High — core feature is broken with no workaround
+        - Medium — feature is degraded but usable
+        - Low — cosmetic or minor inconvenience
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps using example (non-personal) data.
+      placeholder: |
+        1. Open the Dispensary Matrix view
+        2. Click "Add Generic Stock"
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include any error messages shown in the UI or browser console.
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser & version
+      placeholder: 'e.g. Chrome 127, Firefox 128, Safari 17'
+    validations:
+      required: false
+
+  - type: input
+    id: url
+    attributes:
+      label: URL where the bug occurs
+      placeholder: 'e.g. https://prerna2434.github.io/Prerna-shirsath/'
+    validations:
+      required: false

@@ -19,15 +19,52 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: https://prerna2434.github.io/Prerna-shirsath/
+      BASE_ORIGIN: https://prerna2434.github.io
     steps:
-      - name: Verify the public site responds
+      - name: Fetch the public index page
         run: |
           curl --fail --silent --show-error --location --retry 3 --retry-all-errors \
             --max-time 30 "$SITE_URL" --output site.html
-          grep -q '<div id="root"></div>' site.html
-      - name: Verify the built JavaScript asset responds
+          echo "=== First 40 lines of index ==="
+          head -n 40 site.html
+
+      - name: Check root div is present
+        run: grep -q '<div id="root"></div>' site.html
+
+      - name: Check page title is set
+        run: grep -q '<title>GeneticMedicine' site.html
+
+      - name: Check viewport meta tag is present
+        run: grep -q 'name="viewport"' site.html
+
+      - name: Check JavaScript asset is referenced and responds
         run: |
-          ASSET_PATH=$(grep -oE 'src="[^"]+\.js"' site.html | head -n 1 | cut -d'"' -f2)
+          ASSET_PATH=$(grep -oE 'src="/Prerna-shirsath/assets/[^"]+\.js"' site.html \
+            | head -n 1 | cut -d'"' -f2)
+          echo "JS asset path: $ASSET_PATH"
           test -n "$ASSET_PATH"
           curl --fail --silent --show-error --location --max-time 30 \
-            "https://prerna2434.github.io$ASSET_PATH" --output /dev/null
+            "${BASE_ORIGIN}${ASSET_PATH}" --output js_asset.js
+          # Confirm the bundle exports React app content (looks for JSX hydration marker)
+          grep -q "root" js_asset.js
+
+      - name: Check CSS asset is referenced and responds
+        run: |
+          CSS_PATH=$(grep -oE 'href="/Prerna-shirsath/assets/[^"]+\.css"' site.html \
+            | head -n 1 | cut -d'"' -f2)
+          echo "CSS asset path: $CSS_PATH"
+          test -n "$CSS_PATH"
+          curl --fail --silent --show-error --location --max-time 30 \
+            "${BASE_ORIGIN}${CSS_PATH}" --output css_asset.css
+          # Confirm TailwindCSS output is present (bg- utility is always emitted)
+          grep -q "background" css_asset.css
+
+      - name: Check OG meta tags are present
+        run: |
+          grep -q 'property="og:title"' site.html
+          grep -q 'property="og:description"' site.html
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "✅ All smoke checks passed for $SITE_URL"

@@ -17,7 +17,7 @@ This file serves as a living knowledge base — a place to capture important con
 ## Architecture
 
 ```
-src/
+frontend/src/
 ├── App.tsx                  — Root component; handles routing between 4 modes & AI assistant
 ├── types.ts                 — All shared TypeScript interfaces
 ├── index.css                — Global TailwindCSS styles
@@ -36,6 +36,10 @@ src/
 │       ├── GlobalPlatformOperationsView
 │       └── SettingsView
 └── data/                    — mockData (DEFAULT_USERS, mock transactions, etc.)
+backend/src/
+├── app.ts                  — Express API factory and CORS configuration
+├── server.ts               — Backend entry point
+└── services/               — Gemini integration and clinical fallback guidance
 ```
 
 ### App Modes
@@ -75,8 +79,9 @@ src/
 
 | Variable | Purpose |
 |----------|---------|
-| `GEMINI_API_KEY` | Required for Gemini AI API calls (injected at runtime) |
-| `APP_URL` | Hosted app URL for self-referential links and OAuth callbacks |
+| `frontend/.env` → `VITE_API_BASE_URL` | Optional deployed backend origin |
+| `backend/.env` → `GEMINI_API_KEY` | Server-only Gemini API key |
+| `backend/.env` → `FRONTEND_ORIGIN` | Allowed frontend origin for CORS |
 
 ---
 
@@ -94,12 +99,13 @@ src/
 
 | Resource | Path / URL |
 |----------|-----------|
-| Entry Point | [`src/main.tsx`](./src/main.tsx) |
-| Root Component | [`src/App.tsx`](./src/App.tsx) |
-| All Types | [`src/types.ts`](./src/types.ts) |
-| Vite Config | [`vite.config.ts`](./vite.config.ts) |
+| Frontend Entry Point | [`frontend/src/main.tsx`](./frontend/src/main.tsx) |
+| Frontend Root Component | [`frontend/src/App.tsx`](./frontend/src/App.tsx) |
+| Backend Entry Point | [`backend/src/server.ts`](./backend/src/server.ts) |
+| Vite Config | [`frontend/vite.config.ts`](./frontend/vite.config.ts) |
 | Project Metadata | [`metadata.json`](./metadata.json) |
-| Env Template | [`.env.example`](./.env.example) |
+| Frontend Env Template | [`frontend/.env.example`](./frontend/.env.example) |
+| Backend Env Template | [`backend/.env.example`](./backend/.env.example) |
 
 ---
 

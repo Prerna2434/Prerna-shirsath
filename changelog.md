@@ -6,6 +6,50 @@ This project adheres to [Semantic Versioning](https://semver.org/) and the [Keep
 
 ---
 
+## [0.5.0] — 2026-09-09
+
+### Added
+- `frontend/src/components/ui/ErrorBoundary.tsx` — React class component that catches
+  unhandled render/lifecycle errors and renders a branded recovery UI with "Try to
+  recover" (state reset) and "Reload page" actions. Links to the bug-report template.
+  Ready for a monitoring SDK swap in `componentDidCatch`.
+- `ErrorBoundary` wraps the full app tree in `frontend/src/main.tsx`.
+- `.github/ISSUE_TEMPLATE/bug-report.yml` — structured bug-report form with severity
+  dropdown (Critical / High / Medium / Low), affected-area dropdown, steps-to-reproduce,
+  expected/actual behaviour, browser, and URL fields.
+- `.github/workflows/hotfix.yml` — manual-trigger workflow; validates full CI suite
+  (tests + type checks for frontend and backend) then deploys from any branch to GitHub
+  Pages. Writes a summary table (branch, reason, actor, live URL) to the workflow run.
+- `CONTRIBUTING.md` — contributor guide covering privacy rules, bug-report process,
+  severity SLAs, branch conventions, local dev setup, PR checklist, performance budget
+  guidance, and hotfix process.
+
+### Changed
+- `ci.yml` — new "Check performance budget" step after the production build: measures
+  gzip sizes of JS and CSS assets; fails the workflow if JS > 150 kB or CSS > 20 kB.
+- `OPERATIONS.md` — added runtime error tracking section (ErrorBoundary + future SDK),
+  performance budget table, hotfix workflow reference, and expanded feedback triage to
+  include the bug-report template.
+
+## [0.4.0] — 2026-09-09
+
+### Added
+- `scripts/smoke-test.sh` — standalone bash smoke-test script with 8 production checks
+  (HTTP 200, React root div, page title, viewport meta, OG tags, JS asset + content,
+  CSS asset + content, Google Fonts hint). Exits 0 on all-pass, 1 on any failure;
+  accepts an optional `BASE_URL` argument for testing non-production deployments.
+- `ANNOUNCE.md` — public launch announcement with feature table, tech stack overview,
+  CI/CD pipeline description, usage guide, privacy note, and Phase 5 roadmap.
+
+### Changed
+- `production-health.yml` expanded from 2 steps to 8 distinct assertions: page title,
+  viewport meta, JS asset content check, CSS asset content check, OG meta tags,
+  and a final summary line on success.
+
+### Fixed
+- Production build verified with `--base=/Prerna-shirsath/` flag: 48 modules, zero
+  TypeScript or Vite errors, nominal bundle sizes (JS 419 kB / CSS 53 kB).
+
 ## [0.3.1] — 2026-09-09
 
 ### Added

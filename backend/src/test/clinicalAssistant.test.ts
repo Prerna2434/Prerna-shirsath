@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getFallbackClinicalResponse } from '../components/ai/AiAssistantPanel';
+import { getFallbackClinicalResponse } from '../services/clinicalAssistant.js';
 
 describe('AI Clinical Pharmacy Fallback & Guidance Engine', () => {
   it('provides comprehensive clinical overview for Lipitor and Atorvastatin', () => {

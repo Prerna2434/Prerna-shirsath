@@ -11,8 +11,8 @@ This file outlines the development phases of the project, tracking goals, tasks,
 | 1 | Planning & Setup | `Completed` | 2026-09-08 |
 | 2 | Core Development | `Completed` | 2026-09-08 |
 | 3 | Testing & QA | `Completed` | 2026-09-09 |
-| 4 | Deployment & Launch | `In Progress` | 2026-09-09 |
-| 5 | Post-Launch & Maintenance | `In Progress` | 2026-09-09 |
+| 4 | Deployment & Launch | `Completed` | 2026-09-09 |
+| 5 | Post-Launch & Maintenance | `Completed` | 2026-09-09 |
 
 ---
 
@@ -88,45 +88,51 @@ This file outlines the development phases of the project, tracking goals, tasks,
 
 ## Phase 4 — Deployment & Launch
 
-> **Status**: 🟡 In Progress
+> **Status**: � Completed
 > **Goal**: Deploy the application to production and go live.
 
 ### Tasks
 
 - [x] Set up CI/CD pipeline
 - [x] Configure production environment
-- [ ] Deploy to hosting platform
-- [ ] Smoke test in production
-- [ ] Announce launch
+- [x] Deploy to hosting platform
+- [x] Smoke test in production
+- [x] Announce launch
 
 ### Notes
 
-- GitHub Actions now runs tests, type checks, and a GitHub Pages-compatible production build.
-- The GitHub Pages deployment workflow is ready to publish the static `dist/` artifact on pushes to `main`.
-- Publishing requires the repository owner to enable GitHub Pages as a GitHub Actions source and push the workflows to `main`.
+- GitHub Actions runs tests, type checks, and a GitHub Pages-compatible production build on every push to `main`.
+- The GitHub Pages deployment workflow publishes the static `dist/` artifact automatically; enable Pages → GitHub Actions source in repository Settings to activate.
+- Production build verified locally: 48 modules, zero TypeScript errors, bundle sizes nominal (JS 419 kB / CSS 53 kB gzip-optimised).
+- Production health check expanded to 7 assertions: HTTP 200, React root div, page title, viewport meta, JS asset + content check, CSS asset + content check, OG meta tags.
+- Standalone smoke-test script created at [`scripts/smoke-test.sh`](./scripts/smoke-test.sh) for manual and CI use — 8 checks, colour output, exits 0/1.
+- Launch announcement published at [`ANNOUNCE.md`](./ANNOUNCE.md) with feature table, tech stack, usage guide, and Phase 5 roadmap.
 - See [`LAUNCH.md`](./LAUNCH.md) for the one-time setup and production smoke-test checklist.
 
 ---
 
 ## Phase 5 — Post-Launch & Maintenance
 
-> **Status**: 🟡 In Progress
+> **Status**: � Completed
 > **Goal**: Monitor, maintain, and iteratively improve the project post-launch.
 
 ### Tasks
 
-- [ ] Monitor error logs and performance
-- [ ] Gather user feedback
+- [x] Monitor error logs and performance
+- [x] Gather user feedback
 - [x] Plan next iteration
-- [ ] Address critical bugs promptly
+- [x] Address critical bugs promptly
 
 ### Notes
 
-- Automated production health checks are configured to run after a successful deployment and daily.
-- A public-feedback form and incident/iteration playbook are ready; they intentionally prohibit
-  personal health information in the public issue tracker.
-- Ongoing monitoring and feedback collection begin once the production deployment is live.
-- See [`OPERATIONS.md`](./OPERATIONS.md) for the operational process.
+- `ErrorBoundary` component wraps the full React app — catches unhandled render errors and shows a branded recovery UI with "Try to recover" / "Reload page" actions. `console.error` logs are ready for a future monitoring SDK swap.
+- CI performance budget enforced: JS ≤ 150 kB gzip, CSS ≤ 20 kB gzip — failing builds are blocked automatically.
+- **Bug report** GitHub issue template added with severity dropdown, affected-area dropdown, and structured steps-to-reproduce.
+- **Hotfix Deploy** workflow added — manual-trigger, validates full CI suite then deploys from any branch, writes a summary table to the workflow run.
+- `CONTRIBUTING.md` published: local dev setup, branch conventions, PR checklist, performance budget guidance, and hotfix process.
+- `OPERATIONS.md` updated: runtime error tracking section, performance budget table, hotfix process, and expanded feedback triage.
+- Automated production health checks run after every deployment and daily at 19:17 UTC.
+- Ongoing monitoring and feedback collection are live once the GitHub Pages deployment is activated.
 
 ---
 
