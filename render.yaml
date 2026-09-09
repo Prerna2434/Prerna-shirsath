@@ -4,9 +4,8 @@ services:
     name: genetic-medicine-backend
     runtime: node
     rootDir: backend
-    # Install ALL deps (including typescript/tsx) then compile to dist/
-    buildCommand: npm install && ./node_modules/.bin/tsc
-    startCommand: node dist/server.js
+    buildCommand: npm install
+    startCommand: node_modules/.bin/tsx src/server.ts
     envVars:
       - key: NODE_ENV
         value: production
