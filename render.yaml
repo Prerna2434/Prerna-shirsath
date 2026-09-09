@@ -4,14 +4,15 @@ services:
     name: genetic-medicine-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
+    # Install ALL deps (including typescript/tsx) then compile to dist/
+    buildCommand: npm install && ./node_modules/.bin/tsc
+    startCommand: node dist/server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: FRONTEND_ORIGIN
         value: https://prerna2434.github.io
       - key: MONGODB_URI
-        sync: false   # Add real value in Render dashboard → Environment
+        sync: false
       - key: GEMINI_API_KEY
-        sync: false   # Add real value in Render dashboard → Environment (leave blank for offline fallback)
+        sync: false
