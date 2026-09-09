@@ -12,16 +12,20 @@ interface EnterpriseHeaderProps {
   currentUser?: UserProfile | null;
   onOpenAuth?: (portal?: 'doctor' | 'patient' | 'pharmacy') => void;
   onLogout?: () => void;
+  onOpenAi?: () => void;
 }
 
 export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
+  currentView,
+  onSelectView,
   activeMode,
   onSelectMode,
   searchQuery,
   setSearchQuery,
   currentUser,
   onOpenAuth,
-  onLogout
+  onLogout,
+  onOpenAi
 }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -120,6 +124,19 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
           </button>
         </div>
 
+        {/* Clinical AI Assistant Quick Trigger */}
+        {onOpenAi && (
+          <button
+            type="button"
+            onClick={onOpenAi}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#006b53] to-[#00a884] text-white font-label-sm text-[12px] font-bold shadow-sm hover:opacity-95 hover:shadow-md transition-all group"
+            title="Ask Clinical AI Assistant (Gemini 1.5 Flash)"
+          >
+            <span className="material-symbols-outlined text-[16px] animate-pulse">auto_awesome</span>
+            <span className="hidden sm:inline">Ask Clinical AI</span>
+          </button>
+        )}
+
         {/* System telemetry indicator */}
         <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-[#eff4ff] rounded-full border border-[#e5eeff]">
           <span className="w-2 h-2 rounded-full bg-[#006c4a] animate-pulse"></span>
@@ -174,6 +191,35 @@ export const EnterpriseHeader: React.FC<EnterpriseHeaderProps> = ({
                 {currentUser?.licenseOrNpi && (
                   <p className="text-[10px] text-[#006c4a] font-semibold mt-0.5">{currentUser.licenseOrNpi}</p>
                 )}
+              </div>
+
+              {/* Navigation Shortcuts */}
+              <div className="space-y-1 pb-2 border-b border-[#eff4ff]">
+                <p className="text-[10px] uppercase font-bold text-[#525f75] px-1">Navigation:</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    onSelectMode('enterprise');
+                    onSelectView('dashboard');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0b1c30] hover:bg-[#eff4ff] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">dashboard</span>
+                  <span>Executive Dashboard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
+                    onSelectMode('enterprise');
+                    onSelectView('settings');
+                  }}
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#0b1c30] hover:bg-[#eff4ff] flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-[#006b53]">settings</span>
+                  <span>Platform & Profile Settings</span>
+                </button>
               </div>
 
               <div className="space-y-1">

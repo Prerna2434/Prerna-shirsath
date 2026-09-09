@@ -19,11 +19,12 @@ export const EnterpriseSidebar: React.FC<EnterpriseSidebarProps> = ({
   onOpenAuth
 }) => {
   const mainManagementNav = [
-    { id: 'multi-tenant', label: 'Multi-Tenant Overview', icon: 'hub' },
-    { id: 'price-comparison', label: 'Price Comparison & Analytics', icon: 'query_stats' },
+    { id: 'dashboard', label: 'Executive Dashboard', icon: 'dashboard' },
     { id: 'dispensary', label: 'Pharmacy Management', icon: 'local_pharmacy' },
+    { id: 'price-comparison', label: 'Price Comparison & Analytics', icon: 'query_stats' },
     { id: 'catalog', label: 'Medicine Catalog & Equivalence', icon: 'medication' },
-    { id: 'fulfillment', label: 'Order Fulfillment & Dispatch', icon: 'local_shipping' }
+    { id: 'fulfillment', label: 'Order Fulfillment & Dispatch', icon: 'local_shipping' },
+    { id: 'multi-tenant', label: 'Multi-Tenant Overview', icon: 'hub' }
   ];
 
   const portalsNav = [
@@ -34,7 +35,8 @@ export const EnterpriseSidebar: React.FC<EnterpriseSidebarProps> = ({
   const infrastructureNav = [
     { id: 'tenant-schemas', label: 'Tenant Database Schemas', icon: 'schema' },
     { id: 'audit-logs', label: 'Audit Trail & Access Logs', icon: 'shield' },
-    { id: 'api-gateway', label: 'API Gateway & Integrations', icon: 'api' }
+    { id: 'api-gateway', label: 'API Gateway & Integrations', icon: 'api' },
+    { id: 'settings', label: 'Platform & Profile Settings', icon: 'settings' }
   ];
 
   const handleNavClick = (id: string) => {

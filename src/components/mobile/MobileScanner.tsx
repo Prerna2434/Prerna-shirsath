@@ -6,13 +6,49 @@ interface MobileScannerProps {
   onProceedToCompare: () => void;
 }
 
+export const SAMPLE_PRESCRIPTIONS = [
+  {
+    id: 'lipitor',
+    name: 'Lipitor 20mg Tab (90 ct)',
+    physician: 'Dr. Marcus Thorne, MD • Patient: Robert Chen',
+    brandPrice: 88.00,
+    genericName: 'Atorvastatin 20mg',
+    genericPrice: 9.20,
+    savings: 78.80,
+    rating: 'FDA AB-Rated'
+  },
+  {
+    id: 'glucophage',
+    name: 'Glucophage XR 500mg (60 ct)',
+    physician: 'Dr. Evelyn Vance, MD • Patient: Robert Chen',
+    brandPrice: 72.00,
+    genericName: 'Metformin ER 500mg',
+    genericPrice: 7.20,
+    savings: 64.80,
+    rating: 'FDA AB-Rated'
+  },
+  {
+    id: 'zoloft',
+    name: 'Zoloft 50mg Tab (30 ct)',
+    physician: 'Dr. Sarah Jenkins, MD • Patient: Robert Chen',
+    brandPrice: 65.00,
+    genericName: 'Sertraline HCl 50mg',
+    genericPrice: 9.80,
+    savings: 55.20,
+    rating: 'FDA AB-Rated'
+  }
+];
+
 export const MobileScanner: React.FC<MobileScannerProps> = ({
   onBack,
   onProceedToCompare
 }) => {
+  const [selectedRxIdx, setSelectedRxIdx] = useState(0);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanCompleted, setScanCompleted] = useState(true); // Default to showing the detection result like Image 19.png
+  const [scanCompleted, setScanCompleted] = useState(true);
+
+  const activeRx = SAMPLE_PRESCRIPTIONS[selectedRxIdx];
 
   const handleTriggerScan = () => {
     setIsScanning(true);
@@ -20,7 +56,7 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
     setTimeout(() => {
       setIsScanning(false);
       setScanCompleted(true);
-    }, 1200);
+    }, 1000);
   };
 
   return (
@@ -83,15 +119,38 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
           </div>
         </div>
 
-        {/* Live HUD Badges */}
-        <div className="absolute top-16 inset-x-0 flex justify-center gap-2 pointer-events-none">
-          <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-semibold text-[#79f9d0] flex items-center gap-1 border border-[#79f9d0]/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#79f9d0] animate-ping"></span>
-            Auto-Deskew Active
-          </span>
-          <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-semibold text-white/90 border border-white/20">
-            Optimal Lighting
-          </span>
+        {/* Live HUD Badges & Prescription Preset Switcher */}
+        <div className="absolute top-16 inset-x-0 flex flex-col items-center gap-2 z-20 px-4">
+          <div className="flex justify-center gap-2 pointer-events-none">
+            <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-semibold text-[#79f9d0] flex items-center gap-1 border border-[#79f9d0]/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#79f9d0] animate-ping"></span>
+              Auto-Deskew Active
+            </span>
+            <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] font-semibold text-white/90 border border-white/20">
+              Optimal Lighting
+            </span>
+          </div>
+
+          {/* Rx Preset Pills */}
+          <div className="flex items-center gap-1.5 bg-black/50 p-1 rounded-xl backdrop-blur-md border border-white/10">
+            {SAMPLE_PRESCRIPTIONS.map((rx, idx) => (
+              <button
+                key={rx.id}
+                onClick={() => {
+                  setSelectedRxIdx(idx);
+                  setIsScanning(true);
+                  setTimeout(() => setIsScanning(false), 500);
+                }}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all ${
+                  selectedRxIdx === idx
+                    ? 'bg-[#00a884] text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                {rx.id === 'lipitor' ? 'Lipitor' : rx.id === 'glucophage' ? 'Metformin' : 'Zoloft'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Shutter Capture Button */}
@@ -100,6 +159,7 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
             onClick={handleTriggerScan}
             disabled={isScanning}
             className="w-14 h-14 rounded-full border-4 border-white bg-[#00a884] hover:bg-[#006b53] active:scale-95 shadow-xl flex items-center justify-center transition-transform"
+            title="Trigger Optical Scan Extraction"
           >
             <span className="material-symbols-outlined text-[26px] text-white">
               photo_camera
@@ -110,7 +170,7 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
 
       {/* AI Extraction Bottom Sheet / Summary */}
       {scanCompleted && (
-        <div className="bg-[#ffffff] text-[#0b1c30] p-5 rounded-t-3xl shadow-2xl space-y-3 z-30">
+        <div className="bg-[#ffffff] text-[#0b1c30] p-5 rounded-t-3xl shadow-2xl space-y-3 z-30 animate-in slide-in-from-bottom duration-200">
           <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto -mt-1 mb-2"></div>
 
           <div className="flex items-center justify-between">
@@ -123,7 +183,7 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
               </span>
             </div>
             <span className="px-2 py-0.5 bg-[#eff4ff] text-[#006b53] text-[10px] font-bold rounded">
-              FDA AB-Rated
+              {activeRx.rating}
             </span>
           </div>
 
@@ -132,20 +192,26 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-[10px] text-[#525f75] uppercase font-bold">Detected Medicine:</p>
-                <p className="font-bold text-sm text-[#0b1c30]">Lipitor 20mg Tab (90 ct)</p>
-                <p className="text-[11px] text-[#525f75]">Dr. Marcus Thorne, MD • Patient: Robert Chen</p>
+                <p className="font-bold text-sm text-[#0b1c30]">{activeRx.name}</p>
+                <p className="text-[11px] text-[#525f75]">{activeRx.physician}</p>
               </div>
-              <span className="text-xs font-bold text-[#ba1a1a] line-through">$88.00</span>
+              <span className="text-xs font-bold text-[#ba1a1a] line-through">
+                ${activeRx.brandPrice.toFixed(2)}
+              </span>
             </div>
 
             <div className="pt-2 border-t border-[#dce9ff] flex justify-between items-center">
               <div>
-                <span className="font-bold text-[#006c4a] text-xs">Generic Match: Atorvastatin 20mg</span>
+                <span className="font-bold text-[#006c4a] text-xs">Generic Match: {activeRx.genericName}</span>
                 <p className="text-[10px] text-[#525f75]">Identical active ingredient & bioavailability</p>
               </div>
               <div className="text-right">
-                <span className="text-base font-bold text-[#006c4a]">$9.20</span>
-                <span className="text-[10px] text-[#006c4a] block font-semibold">Save $78.80</span>
+                <span className="text-base font-bold text-[#006c4a]">
+                  ${activeRx.genericPrice.toFixed(2)}
+                </span>
+                <span className="text-[10px] text-[#006c4a] block font-semibold">
+                  Save ${activeRx.savings.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
@@ -155,7 +221,7 @@ export const MobileScanner: React.FC<MobileScannerProps> = ({
             onClick={onProceedToCompare}
             className="w-full py-3 px-4 bg-[#006b53] hover:bg-[#00513e] text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-colors"
           >
-            <span>Lock In $9.20 Price & Compare Pharmacies</span>
+            <span>Lock In ${activeRx.genericPrice.toFixed(2)} Price & Compare Pharmacies</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </button>
         </div>

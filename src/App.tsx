@@ -10,6 +10,9 @@ import { DispensaryMatrixView } from './components/views/DispensaryMatrixView';
 import { PriceComparisonEngineView } from './components/views/PriceComparisonEngineView';
 import { DoctorPrescriptionReviewView } from './components/views/DoctorPrescriptionReviewView';
 import { GlobalPlatformOperationsView } from './components/views/GlobalPlatformOperationsView';
+import { DashboardView } from './components/views/DashboardView';
+import { SettingsView } from './components/views/SettingsView';
+import { AiAssistantPanel } from './components/ai/AiAssistantPanel';
 import { PatientMobileApp } from './components/mobile/PatientMobileApp';
 import { PrdViewerModal } from './components/docs/PrdViewerModal';
 import { UnifiedAuthPage } from './components/auth/UnifiedAuthPage';
@@ -18,11 +21,18 @@ import { UserProfile } from './types';
 
 export default function App() {
   const [activeMode, setActiveMode] = useState<'enterprise' | 'mobile' | 'auth' | 'prd'>('enterprise');
-  const [currentView, setCurrentView] = useState<string>('dispensary');
+  const [currentView, setCurrentView] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(DEFAULT_USERS.admin);
   const [initialAuthTab, setInitialAuthTab] = useState<'doctor' | 'patient' | 'pharmacy'>('doctor');
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiQuery, setAiQuery] = useState<string | undefined>(undefined);
+
+  const handleOpenAi = (query?: string) => {
+    setAiQuery(query);
+    setAiOpen(true);
+  };
 
   const handleOpenAuth = (portalTab?: 'doctor' | 'patient' | 'pharmacy') => {
     if (portalTab) {
@@ -52,6 +62,7 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
+        onOpenAi={() => handleOpenAi()}
       />
 
       {/* Main Layout Body */}
@@ -85,8 +96,20 @@ export default function App() {
                   </span>
                 </div>
 
-                {/* 4 Core Authoritative Views Quick Selector */}
+                {/* Core Authoritative Views Quick Selector */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+                  <button
+                    onClick={() => setCurrentView('dashboard')}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      currentView === 'dashboard'
+                        ? 'bg-[#006b53] text-[#ffffff] shadow-xs'
+                        : 'bg-[#eff4ff] text-[#525f75] hover:bg-[#e5eeff]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">dashboard</span>
+                    <span>Executive Dashboard</span>
+                  </button>
+
                   <button
                     onClick={() => setCurrentView('dispensary')}
                     className={`px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 ${
@@ -132,32 +155,56 @@ export default function App() {
                     }`}
                   >
                     <span className="material-symbols-outlined text-[16px]">hub</span>
-                    <span>4. Multi-Tenant Clearinghouse</span>
+                    <span>4. Multi-Tenant</span>
+                  </button>
+
+                  <button
+                    onClick={() => setCurrentView('settings')}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      currentView === 'settings'
+                        ? 'bg-[#006b53] text-[#ffffff] shadow-xs'
+                        : 'bg-[#eff4ff] text-[#525f75] hover:bg-[#e5eeff]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">settings</span>
+                    <span>Settings</span>
                   </button>
                 </div>
               </div>
 
               {/* Dynamic View Rendering */}
+              {currentView === 'dashboard' && (
+                <DashboardView onSelectView={setCurrentView} />
+              )}
               {currentView === 'dispensary' && (
                 <DispensaryMatrixView
                   currentUser={currentUser}
                   onLoginSuccess={handleLoginSuccess}
+                  onConsultAi={handleOpenAi}
                 />
               )}
-              {currentView === 'price-comparison' && <PriceComparisonEngineView />}
-              {currentView === 'doctor-prescriptions' && <DoctorPrescriptionReviewView />}
+              {currentView === 'price-comparison' && (
+                <PriceComparisonEngineView onConsultAi={handleOpenAi} />
+              )}
+              {currentView === 'doctor-prescriptions' && (
+                <DoctorPrescriptionReviewView onConsultAi={handleOpenAi} />
+              )}
               {currentView === 'multi-tenant' && <GlobalPlatformOperationsView />}
-              {currentView === 'catalog' && <PriceComparisonEngineView />}
+              {currentView === 'catalog' && (
+                <PriceComparisonEngineView onConsultAi={handleOpenAi} />
+              )}
               {currentView === 'fulfillment' && (
                 <DispensaryMatrixView
                   currentUser={currentUser}
                   onLoginSuccess={handleLoginSuccess}
+                  onConsultAi={handleOpenAi}
                 />
               )}
               {currentView === 'settlement' && <GlobalPlatformOperationsView />}
               {currentView === 'tenant-schemas' && <GlobalPlatformOperationsView />}
               {currentView === 'audit-logs' && <GlobalPlatformOperationsView />}
               {currentView === 'api-gateway' && <GlobalPlatformOperationsView />}
+              {currentView === 'settings' && <SettingsView currentUser={currentUser} />}
             </div>
           </main>
         </div>
@@ -204,6 +251,28 @@ export default function App() {
         <div className="pt-20 pb-12 px-4 sm:px-6 max-w-7xl mx-auto">
           <PrdViewerModal />
         </div>
+      )}
+
+      {/* Global Clinical AI Assistant Panel */}
+      <AiAssistantPanel
+        isOpen={aiOpen}
+        onClose={() => {
+          setAiOpen(false);
+          setAiQuery(undefined);
+        }}
+        initialQuery={aiQuery}
+      />
+
+      {/* Persistent Floating AI Drug Assistant Button */}
+      {!aiOpen && (
+        <button
+          onClick={() => handleOpenAi()}
+          className="fixed bottom-6 right-6 z-30 p-3.5 bg-gradient-to-r from-[#006b53] to-[#00a884] text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 group border border-white/30"
+          title="Open Clinical AI Drug Assistant"
+        >
+          <span className="material-symbols-outlined text-[24px] animate-pulse">auto_awesome</span>
+          <span className="font-bold text-xs pr-1 hidden sm:inline">Ask AI Pharmacist</span>
+        </button>
       )}
     </div>
   );

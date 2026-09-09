@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { PRESCRIPTION_CASES } from '../../data/mockData';
 import { PrescriptionCase } from '../../types';
 
-export const DoctorPrescriptionReviewView: React.FC = () => {
+interface DoctorPrescriptionReviewViewProps {
+  onConsultAi?: (query: string) => void;
+}
+
+export const DoctorPrescriptionReviewView: React.FC<DoctorPrescriptionReviewViewProps> = ({ onConsultAi }) => {
   const [selectedCaseId, setSelectedCaseId] = useState<string>(PRESCRIPTION_CASES[0].id);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [confirmedCheckboxes, setConfirmedCheckboxes] = useState({
@@ -11,6 +15,10 @@ export const DoctorPrescriptionReviewView: React.FC = () => {
   });
   const [filterPriority, setFilterPriority] = useState<string>('ALL');
   const [approvalStatus, setApprovalStatus] = useState<Record<string, 'approved' | 'brand_locked' | 'rejected'>>({});
+  const [clinicalNotes, setClinicalNotes] = useState<Record<string, string>>({
+    'case-01': 'Patient consulted via secure telehealth. Informed of 89% generic savings; no prior statin myopathy reported. Approved DAW-0.'
+  });
+  const [activeNoteText, setActiveNoteText] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const selectedCase = PRESCRIPTION_CASES.find(c => c.id === selectedCaseId) || PRESCRIPTION_CASES[0];
@@ -33,6 +41,18 @@ export const DoctorPrescriptionReviewView: React.FC = () => {
   const handleReject = () => {
     setApprovalStatus(prev => ({ ...prev, [selectedCase.id]: 'rejected' }));
     showToast(`Prescription ${selectedCase.rxNumber} flagged for Physician Clinical Callback.`);
+  };
+
+  const handleSaveNote = () => {
+    if (!activeNoteText.trim()) return;
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const formatted = `[${timestamp} Dr. Evelyn Vance]: ${activeNoteText.trim()}`;
+    setClinicalNotes(prev => ({
+      ...prev,
+      [selectedCase.id]: prev[selectedCase.id] ? `${prev[selectedCase.id]}\n${formatted}` : formatted
+    }));
+    setActiveNoteText('');
+    showToast(`Clinical progress note saved to electronic health record for ${selectedCase.patientName}.`);
   };
 
   const filteredCases = PRESCRIPTION_CASES.filter(c => {
@@ -289,9 +309,21 @@ export const DoctorPrescriptionReviewView: React.FC = () => {
                 <span className="material-symbols-outlined text-[#006c4a]">health_and_safety</span>
                 Patient Safety & DDI Check
               </h3>
-              <span className="px-2 py-0.5 rounded bg-[#006c4a]/10 text-[#006c4a] font-bold text-[11px]">
-                Passed
-              </span>
+              <div className="flex items-center gap-1.5">
+                {onConsultAi && (
+                  <button
+                    onClick={() => onConsultAi(`Perform comprehensive Drug-Drug Interaction (DDI) and allergy safety screening for patient ${selectedCase.patientName} (${selectedCase.patientAge}yo ${selectedCase.patientGender}) prescribed ${selectedCase.brandDrug} (${selectedCase.genericDrug}). Active co-medications: ${selectedCase.drugInteractions.activeCoMeds}. Allergy notes: ${selectedCase.drugInteractions.allergyDetails}.`)}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#006b53] hover:bg-[#00513e] text-white text-[11px] font-bold shadow-xs transition-colors"
+                    title="Launch AI DDI check"
+                  >
+                    <span className="material-symbols-outlined text-[13px]">auto_awesome</span>
+                    <span>Check AI</span>
+                  </button>
+                )}
+                <span className="px-2 py-0.5 rounded bg-[#006c4a]/10 text-[#006c4a] font-bold text-[11px]">
+                  Passed
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2 text-xs">
@@ -396,6 +428,41 @@ export const DoctorPrescriptionReviewView: React.FC = () => {
               >
                 <span className="material-symbols-outlined text-[16px]">close</span>
                 Reject / Request Physician Callback
+              </button>
+            </div>
+          </div>
+
+          {/* Clinical Progress Notes & EHR Consultation */}
+          <div className="bg-[#ffffff] rounded-2xl border border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.03)] p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="font-label-md text-xs font-bold text-[#0b1c30] uppercase tracking-wider flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-[#006b53]">edit_note</span>
+                Clinical EHR Progress Notes
+              </h4>
+              <span className="text-[10px] text-[#525f75] font-code-num">HL7 R4 Attached</span>
+            </div>
+
+            {clinicalNotes[selectedCase.id] && (
+              <div className="p-2.5 bg-[#eff4ff] rounded-xl border border-[#dce9ff] text-xs text-[#0b1c30] whitespace-pre-wrap font-sans">
+                {clinicalNotes[selectedCase.id]}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <textarea
+                rows={2}
+                value={activeNoteText}
+                onChange={e => setActiveNoteText(e.target.value)}
+                placeholder="Add clinician note (e.g. Verified lack of hypersensitivity, patient consented to generic switch)..."
+                className="w-full p-2.5 bg-[#f8f9ff] rounded-xl border border-[#e5eeff] text-xs text-[#0b1c30] placeholder:text-[#525f75] focus:outline-none focus:ring-1 focus:ring-[#006b53]"
+              />
+              <button
+                onClick={handleSaveNote}
+                disabled={!activeNoteText.trim()}
+                className="w-full py-2 bg-[#006b53] hover:bg-[#00513e] disabled:opacity-40 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px]">save</span>
+                Save Note to EHR Record
               </button>
             </div>
           </div>

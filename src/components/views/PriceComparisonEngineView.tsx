@@ -1,11 +1,22 @@
 import React, { useState } from 'react';
 import { COMPETING_PHARMACIES } from '../../data/mockData';
 import { CompetingPharmacy } from '../../types';
+import { rankPharmacies, calculateSavings } from '../../utils/arbitrageCalculator';
 
-export const PriceComparisonEngineView: React.FC = () => {
+interface PriceComparisonEngineViewProps {
+  onConsultAi?: (query: string) => void;
+}
+
+export const PriceComparisonEngineView: React.FC<PriceComparisonEngineViewProps> = ({ onConsultAi }) => {
   const [pharmacies, setPharmacies] = useState<CompetingPharmacy[]>(COMPETING_PHARMACIES);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'courier' | 'pickup' | 'brand'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Custom Savings Simulator state
+  const [calcBrandName, setCalcBrandName] = useState('Lipitor 20mg');
+  const [calcBrandPrice, setCalcBrandPrice] = useState(88.00);
+  const [calcGenericPrice, setCalcGenericPrice] = useState(9.20);
+  const [calcMonths, setCalcMonths] = useState(12);
 
   // Weight sliders state
   const [weights, setWeights] = useState({
@@ -32,8 +43,15 @@ export const PriceComparisonEngineView: React.FC = () => {
   };
 
   const handleDeployWeights = () => {
-    showToast('Routing engine weights re-calibrated and pushed to edge routing cluster.');
+    // Dynamically recalculate scores and re-rank generic pharmacies
+    setPharmacies(prev => rankPharmacies(prev, weights));
+    showToast('Routing engine weights re-calibrated. Top fulfillment route dynamically optimized.');
   };
+
+  const savingsCalc = calculateSavings(calcBrandPrice, calcGenericPrice, calcMonths);
+  const monthlySavings = savingsCalc.monthlySavings;
+  const totalSimulatedSavings = savingsCalc.totalSavings;
+  const savingsPct = savingsCalc.savingsPercentage.toFixed(1);
 
   const filteredPharmacies = pharmacies.filter(p => {
     if (selectedFilter === 'courier') return p.fulfillmentSla.toLowerCase().includes('courier') || p.fulfillmentSla.toLowerCase().includes('express');
@@ -294,6 +312,97 @@ export const PriceComparisonEngineView: React.FC = () => {
               </svg>
             </div>
           </div>
+
+          {/* Custom Medicine Savings Simulator Card */}
+          <div className="bg-[#ffffff] rounded-2xl border border-[#e5eeff] shadow-[0_1px_8px_rgba(0,0,0,0.03)] p-5 space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-[#eff4ff]">
+              <div>
+                <h4 className="font-headline-sm text-sm font-bold text-[#0b1c30] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-[#006b53]">calculate</span>
+                  Custom Medicine Savings Calculator
+                </h4>
+                <p className="text-[11px] text-[#525f75]">Simulate patient arbitrage savings on any chronic regimen</p>
+              </div>
+              <span className="px-2 py-0.5 rounded bg-[#006c4a]/10 text-[#006c4a] font-bold text-[11px]">
+                {savingsPct}% Drop
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label className="block text-[#525f75] font-semibold mb-1">Medication Name</label>
+                <input
+                  type="text"
+                  value={calcBrandName}
+                  onChange={e => setCalcBrandName(e.target.value)}
+                  placeholder="e.g. Lipitor 20mg"
+                  className="w-full h-8 px-2.5 bg-[#eff4ff] rounded-lg border border-[#dce9ff] text-xs text-[#0b1c30] focus:outline-none focus:ring-1 focus:ring-[#006b53]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#525f75] font-semibold mb-1">Duration (Months)</label>
+                <select
+                  value={calcMonths}
+                  onChange={e => setCalcMonths(Number(e.target.value))}
+                  className="w-full h-8 px-2 bg-[#eff4ff] rounded-lg border border-[#dce9ff] text-xs text-[#0b1c30] focus:outline-none focus:ring-1 focus:ring-[#006b53]"
+                >
+                  <option value={1}>1 Month (Immediate)</option>
+                  <option value={3}>3 Months (90-Day Supply)</option>
+                  <option value={6}>6 Months (Maintenance)</option>
+                  <option value={12}>12 Months (Annual Care)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[#525f75] font-semibold mb-1">Brand Price ($/mo)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={calcBrandPrice}
+                  onChange={e => setCalcBrandPrice(Number(e.target.value))}
+                  className="w-full h-8 px-2.5 bg-[#eff4ff] rounded-lg border border-[#dce9ff] text-xs text-[#0b1c30] focus:outline-none focus:ring-1 focus:ring-[#006b53]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[#525f75] font-semibold mb-1">Generic Price ($/mo)</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={calcGenericPrice}
+                  onChange={e => setCalcGenericPrice(Number(e.target.value))}
+                  className="w-full h-8 px-2.5 bg-[#eff4ff] rounded-lg border border-[#dce9ff] text-xs text-[#0b1c30] focus:outline-none focus:ring-1 focus:ring-[#006b53]"
+                />
+              </div>
+            </div>
+
+            {/* Calculation Result */}
+            <div className="p-3 bg-gradient-to-r from-[#006b53]/10 to-[#00a884]/10 rounded-xl border border-[#006b53]/20 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-[#006b53] block">
+                  Projected Patient Savings ({calcMonths} Months):
+                </span>
+                <p className="text-xl font-bold text-[#006c4a]">
+                  ${totalSimulatedSavings.toFixed(2)}
+                </p>
+                <p className="text-[10px] text-[#525f75]">
+                  Monthly delta: ${monthlySavings.toFixed(2)}/mo
+                </p>
+              </div>
+
+              {onConsultAi && (
+                <button
+                  type="button"
+                  onClick={() => onConsultAi(`Calculate detailed patient savings and review therapeutic equivalence for ${calcBrandName} (Brand $${calcBrandPrice} vs Generic $${calcGenericPrice}) over ${calcMonths} months.`)}
+                  className="px-3 py-1.5 bg-[#006b53] hover:bg-[#00513e] text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[15px]">auto_awesome</span>
+                  <span>AI Breakdown</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Right Column: Multi-Store Comparison Matrix (7 cols) */}
@@ -407,8 +516,8 @@ export const PriceComparisonEngineView: React.FC = () => {
                 </div>
 
                 {/* Bottom Action Footer */}
-                <div className="mt-3 pt-3 border-t border-[#e5eeff]/80 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs">
+                <div className="mt-3 pt-3 border-t border-[#e5eeff]/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs flex-wrap">
                     {pharmacy.isBrandOnly ? (
                       <span className="text-[#ba1a1a] font-medium text-[11px]">
                         Non-Generic Reference (DAW-1 Only)
@@ -419,19 +528,29 @@ export const PriceComparisonEngineView: React.FC = () => {
                         FDA Orange Book Equivalence Validated
                       </span>
                     )}
+
+                    {onConsultAi && !pharmacy.isBrandOnly && (
+                      <button
+                        onClick={() => onConsultAi(`Evaluate clinical bioequivalence and pharmacy license credentials for ${pharmacy.name} (${pharmacy.genericProduct} manufactured by ${pharmacy.manufacturer}).`)}
+                        className="inline-flex items-center gap-1 text-[11px] text-[#006b53] hover:text-[#00513e] font-semibold ml-1"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">auto_awesome</span>
+                        <span>Clinical AI Review</span>
+                      </button>
+                    )}
                   </div>
 
                   {pharmacy.isDefault ? (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-[#006b53] text-[#ffffff] text-xs font-semibold shadow-xs">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-[#006b53] text-[#ffffff] text-xs font-semibold shadow-xs shrink-0">
                       <span className="material-symbols-outlined text-[15px]">done_all</span>
                       Active Platform Route
                     </span>
                   ) : pharmacy.isBrandOnly ? (
-                    <span className="text-xs text-[#525f75]">Reference Only</span>
+                    <span className="text-xs text-[#525f75] shrink-0">Reference Only</span>
                   ) : (
                     <button
                       onClick={() => handleSelectRoute(pharmacy.rank)}
-                      className="px-3 py-1 bg-[#eff4ff] hover:bg-[#00a884] hover:text-[#ffffff] text-[#006b53] rounded-lg text-xs font-semibold border border-[#dce9ff] transition-all"
+                      className="px-3 py-1 bg-[#eff4ff] hover:bg-[#00a884] hover:text-[#ffffff] text-[#006b53] rounded-lg text-xs font-semibold border border-[#dce9ff] transition-all shrink-0"
                     >
                       Select Route
                     </button>

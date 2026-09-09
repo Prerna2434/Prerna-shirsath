@@ -24,6 +24,7 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
   const [selectedPharmacyRank, setSelectedPharmacyRank] = useState<number>(1);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [mobileSearchTerm, setMobileSearchTerm] = useState('');
   const [showFaq, setShowFaq] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -33,14 +34,25 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
     setShowAuthModal(false);
   };
 
-
   const categories = ['All', 'Cholesterol', 'Blood Pressure', 'Diabetes', 'Antibiotics', 'Anxiety'];
 
-  const trendingDrops = [
-    { name: 'Rosuvastatin 10mg', brand: 'Crestor', orig: 118.50, generic: 14.20, drop: '88%' },
-    { name: 'Metformin ER 500mg', brand: 'Glucophage XR', orig: 72.00, generic: 7.20, drop: '90%' },
-    { name: 'Sertraline HCl 50mg', brand: 'Zoloft', orig: 65.00, generic: 9.80, drop: '85%' },
+  const allTrendingDrops = [
+    { name: 'Rosuvastatin 10mg', brand: 'Crestor', orig: 118.50, generic: 14.20, drop: '88%', category: 'Cholesterol' },
+    { name: 'Atorvastatin 20mg', brand: 'Lipitor', orig: 88.00, generic: 9.20, drop: '90%', category: 'Cholesterol' },
+    { name: 'Metformin ER 500mg', brand: 'Glucophage XR', orig: 72.00, generic: 7.20, drop: '90%', category: 'Diabetes' },
+    { name: 'Sertraline HCl 50mg', brand: 'Zoloft', orig: 65.00, generic: 9.80, drop: '85%', category: 'Anxiety' },
+    { name: 'Amlodipine 5mg', brand: 'Norvasc', orig: 54.00, generic: 6.10, drop: '89%', category: 'Blood Pressure' },
+    { name: 'Amoxicillin 500mg', brand: 'Amoxil', orig: 42.00, generic: 5.40, drop: '87%', category: 'Antibiotics' },
+    { name: 'Escitalopram 10mg', brand: 'Lexapro', orig: 82.00, generic: 8.50, drop: '90%', category: 'Anxiety' },
+    { name: 'Lisinopril 10mg', brand: 'Prinivil', orig: 48.00, generic: 4.80, drop: '90%', category: 'Blood Pressure' },
   ];
+
+  const filteredTrendingDrops = allTrendingDrops.filter(drop => {
+    const matchesCategory = selectedCategory === 'All' || drop.category === selectedCategory;
+    const matchesSearch = drop.name.toLowerCase().includes(mobileSearchTerm.toLowerCase()) ||
+                          drop.brand.toLowerCase().includes(mobileSearchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   if (activeTab === 'scanner') {
     return (
@@ -144,6 +156,8 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
             </span>
             <input
               type="text"
+              value={mobileSearchTerm}
+              onChange={(e) => setMobileSearchTerm(e.target.value)}
               placeholder="Search generic medicine or brand name..."
               className="w-full h-10 pl-9 pr-16 bg-[#eff4ff] rounded-xl text-xs text-[#0b1c30] placeholder:text-[#525f75] focus:outline-none focus:ring-1 focus:ring-[#00a884]"
             />
@@ -249,7 +263,7 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
             </div>
 
             <div className="space-y-2">
-              {trendingDrops.map((drop, idx) => (
+              {filteredTrendingDrops.map((drop, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveTab('compare')}
@@ -257,7 +271,7 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
                 >
                   <div>
                     <p className="font-bold text-xs text-[#0b1c30]">{drop.name}</p>
-                    <p className="text-[11px] text-[#525f75]">Brand: {drop.brand}</p>
+                    <p className="text-[11px] text-[#525f75]">Brand: {drop.brand} • <span className="text-[#006b53] font-medium">{drop.category}</span></p>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-1.5 justify-end">
@@ -268,6 +282,11 @@ export const PatientMobileApp: React.FC<PatientMobileAppProps> = ({
                   </div>
                 </div>
               ))}
+              {filteredTrendingDrops.length === 0 && (
+                <div className="p-4 text-center text-xs text-[#525f75] bg-[#eff4ff] rounded-xl">
+                  No generic medications match "{mobileSearchTerm}".
+                </div>
+              )}
             </div>
           </div>
 
