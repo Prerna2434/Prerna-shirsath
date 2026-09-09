@@ -4,16 +4,14 @@ services:
     name: genetic-medicine-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
-      - key: PORT
-        value: 3001
       - key: NODE_ENV
         value: production
-      - key: MONGODB_URI
-        sync: false          # set the real value in Render dashboard → Environment
-      - key: GEMINI_API_KEY
-        sync: false          # set the real value in Render dashboard → Environment
       - key: FRONTEND_ORIGIN
         value: https://prerna2434.github.io
+      - key: MONGODB_URI
+        sync: false   # Add real value in Render dashboard → Environment
+      - key: GEMINI_API_KEY
+        sync: false   # Add real value in Render dashboard → Environment (leave blank for offline fallback)
