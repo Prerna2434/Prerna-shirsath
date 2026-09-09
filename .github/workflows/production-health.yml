@@ -1,0 +1,33 @@
+name: Production Health Check
+
+on:
+  workflow_run:
+    workflows: [Deploy to GitHub Pages]
+    types: [completed]
+  schedule:
+    - cron: '17 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-site:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://prerna2434.github.io/Prerna-shirsath/
+    steps:
+      - name: Verify the public site responds
+        run: |
+          curl --fail --silent --show-error --location --retry 3 --retry-all-errors \
+            --max-time 30 "$SITE_URL" --output site.html
+          grep -q '<div id="root"></div>' site.html
+      - name: Verify the built JavaScript asset responds
+        run: |
+          ASSET_PATH=$(grep -oE 'src="[^"]+\.js"' site.html | head -n 1 | cut -d'"' -f2)
+          test -n "$ASSET_PATH"
+          curl --fail --silent --show-error --location --max-time 30 \
+            "https://prerna2434.github.io$ASSET_PATH" --output /dev/null

@@ -1,0 +1,35 @@
+name: User feedback
+description: Share product feedback without personal or health information.
+title: '[Feedback]: '
+labels: [feedback]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include a prescription, diagnosis, patient name, contact details, or any other
+        personal health information. This is a public issue tracker.
+  - type: dropdown
+    id: user-role
+    attributes:
+      label: Which experience are you reviewing?
+      options:
+        - Patient mobile app
+        - Doctor prescription review
+        - Pharmacy management
+        - Platform administration
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: feedback
+    attributes:
+      label: What worked well or needs improvement?
+      description: Describe the experience using non-identifying example data only.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What outcome did you expect?
+    validations:
+      required: true

@@ -10,9 +10,9 @@ This file outlines the development phases of the project, tracking goals, tasks,
 |-------|-------|--------|-------------|
 | 1 | Planning & Setup | `Completed` | 2026-09-08 |
 | 2 | Core Development | `Completed` | 2026-09-08 |
-| 3 | Testing & QA | `Pending` | — |
-| 4 | Deployment & Launch | `Pending` | — |
-| 5 | Post-Launch & Maintenance | `Pending` | — |
+| 3 | Testing & QA | `Completed` | 2026-09-09 |
+| 4 | Deployment & Launch | `In Progress` | 2026-09-09 |
+| 5 | Post-Launch & Maintenance | `In Progress` | 2026-09-09 |
 
 ---
 
@@ -63,57 +63,70 @@ This file outlines the development phases of the project, tracking goals, tasks,
 
 ## Phase 3 — Testing & QA
 
-> **Status**: ⚪ Pending
+> **Status**: 🟢 Completed
 > **Goal**: Ensure the application is stable, performant, and bug-free.
 
 ### Tasks
 
-- [ ] Write unit tests
-- [ ] Write integration tests
-- [ ] Perform manual testing
-- [ ] Fix identified bugs
-- [ ] Performance and accessibility audit
+- [x] Write unit tests
+- [x] Write integration tests
+- [x] Perform manual testing
+- [x] Fix identified bugs
+- [x] Performance and accessibility audit
 
 ### Notes
 
-- _(Any relevant notes, blockers, or context for this phase)_
+- Automated coverage validates the arbitrage calculator, dispensary inventory and order workflows,
+  and clinical AI fallback guidance (25 tests total).
+- Manual browser QA verified accessible navigation controls and the offline clinical AI savings flow.
+- Fixed fallback AI intent matching so "save" and "saving" questions route to generic-arbitrage
+  economics instead of generic equivalence guidance.
+- Production build and TypeScript checks pass. The build reports a non-blocking main bundle-size
+  advisory; route-level code splitting is deferred to the deployment optimisation phase.
 
 ---
 
 ## Phase 4 — Deployment & Launch
 
-> **Status**: ⚪ Pending
+> **Status**: 🟡 In Progress
 > **Goal**: Deploy the application to production and go live.
 
 ### Tasks
 
-- [ ] Set up CI/CD pipeline
-- [ ] Configure production environment
+- [x] Set up CI/CD pipeline
+- [x] Configure production environment
 - [ ] Deploy to hosting platform
 - [ ] Smoke test in production
 - [ ] Announce launch
 
 ### Notes
 
-- _(Any relevant notes, blockers, or context for this phase)_
+- GitHub Actions now runs tests, type checks, and a GitHub Pages-compatible production build.
+- The GitHub Pages deployment workflow is ready to publish the static `dist/` artifact on pushes to `main`.
+- Publishing requires the repository owner to enable GitHub Pages as a GitHub Actions source and push the workflows to `main`.
+- See [`LAUNCH.md`](./LAUNCH.md) for the one-time setup and production smoke-test checklist.
 
 ---
 
 ## Phase 5 — Post-Launch & Maintenance
 
-> **Status**: ⚪ Pending
+> **Status**: 🟡 In Progress
 > **Goal**: Monitor, maintain, and iteratively improve the project post-launch.
 
 ### Tasks
 
 - [ ] Monitor error logs and performance
 - [ ] Gather user feedback
-- [ ] Plan next iteration
+- [x] Plan next iteration
 - [ ] Address critical bugs promptly
 
 ### Notes
 
-- _(Any relevant notes, blockers, or context for this phase)_
+- Automated production health checks are configured to run after a successful deployment and daily.
+- A public-feedback form and incident/iteration playbook are ready; they intentionally prohibit
+  personal health information in the public issue tracker.
+- Ongoing monitoring and feedback collection begin once the production deployment is live.
+- See [`OPERATIONS.md`](./OPERATIONS.md) for the operational process.
 
 ---
 
@@ -128,4 +141,4 @@ This file outlines the development phases of the project, tracking goals, tasks,
 
 ---
 
-_Last updated: 2026-09-08_
+_Last updated: 2026-09-09_

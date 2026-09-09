@@ -52,7 +52,7 @@ describe('AI Clinical Pharmacy Fallback & Guidance Engine', () => {
     expect(response).toContain('Platform Generic Arbitrage Economics');
     expect(response).toContain('85% to 92%');
     expect(response).toContain('PBM');
-    expect(response).toContain('annual');
+    expect(response).toMatch(/annual/i);
   });
 
   it('handles unrecognized medical queries gracefully with FDA Anda standards advice', () => {

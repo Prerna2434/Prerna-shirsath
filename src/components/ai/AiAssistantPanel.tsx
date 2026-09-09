@@ -36,6 +36,17 @@ const suggestedQuestions = [
 // Rich fallback knowledge for clinical pharmacy questions
 export const getFallbackClinicalResponse = (query: string): string => {
   const q = query.toLowerCase();
+  const isSavingsQuestion =
+    q.includes('save') || q.includes('saving') || q.includes('cost') || q.includes('arbitrage');
+
+  if (isSavingsQuestion) {
+    return `### **Platform Generic Arbitrage Economics**
+
+• **Average Out-of-Pocket Savings**: **85% to 92%** across top 100 chronic maintenance prescriptions.
+• **Direct Annual Patient Impact**: Patients switching maintenance regimens (e.g. Atorvastatin, Metformin ER, Lisinopril) save an average of **$840 to $1,420 per year**.
+• **Clearinghouse Model**: Eliminates Pharmacy Benefit Manager (PBM) spread pricing, passing wholesale tier-1 discounts directly to the dispensing community pharmacy and insured/cash patients.`;
+  }
+
   if (q.includes('lipitor') || q.includes('atorvastatin')) {
     return `### **Lipitor (Atorvastatin Calcium) Clinical Overview**
 
@@ -77,14 +88,6 @@ export const getFallbackClinicalResponse = (query: string): string => {
   - **AN**: Bioequivalent solutions and powders for aerosolization.
 • **"B" Codes**: Products requiring further FDA investigation or lacking bioequivalence documentation.
 • **Platform Rule**: GeneticMedicine clearinghouse automatically verifies AB-rated therapeutic equivalence before generating clearinghouse arbitrage offers.`;
-  }
-
-  if (q.includes('saving') || q.includes('cost') || q.includes('arbitrage')) {
-    return `### **Platform Generic Arbitrage Economics**
-
-• **Average Out-of-Pocket Savings**: **85% to 92%** across top 100 chronic maintenance prescriptions.
-• **Direct Annual Patient Impact**: Patients switching maintenance regimens (e.g. Atorvastatin, Metformin ER, Lisinopril) save an average of **$840 to $1,420 per year**.
-• **Clearinghouse Model**: Eliminates Pharmacy Benefit Manager (PBM) spread pricing, passing wholesale tier-1 discounts directly to the dispensing community pharmacy and insured/cash patients.`;
   }
 
   return `### **Clinical Pharmacological Assessment**

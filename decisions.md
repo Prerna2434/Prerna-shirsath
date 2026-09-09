@@ -21,6 +21,15 @@ Each entry follows this structure:
 
 ---
 
+### [2026-09-09] Deploy the static client through GitHub Pages
+
+- **Status**: `Accepted`
+- **Context**: The current application is a Vite-built static client, and the repository is already hosted on GitHub.
+- **Decision**: Use GitHub Actions to validate each change and deploy the production `dist/` artifact to GitHub Pages on pushes to `main`.
+- **Consequences**: The public site uses the `/Prerna-shirsath/` base path. Live Gemini access remains deferred until a protected server-side API is available; no secret is exposed to the browser.
+
+---
+
 ### [2026-09-08] Use React 19 + Vite + TypeScript as the core frontend stack
 
 - **Status**: `Accepted`

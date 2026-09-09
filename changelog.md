@@ -6,6 +6,30 @@ This project adheres to [Semantic Versioning](https://semver.org/) and the [Keep
 
 ---
 
+## [0.3.1] — 2026-09-09
+
+### Added
+- Production health-check workflow for deployment-triggered and daily availability checks.
+- Privacy-safe public feedback form and post-launch incident-response playbook.
+
+## [0.3.0] — 2026-09-09
+
+### Added
+- GitHub Actions continuous-integration workflow for automated tests, TypeScript checks, and a production build.
+- GitHub Pages deployment workflow for the static Vite bundle.
+- Launch runbook covering one-time Pages setup, smoke testing, and environment safety.
+
+## [0.2.1] — 2026-09-09
+
+### Fixed
+- Corrected offline AI intent matching so patient questions using either "save" or "saving"
+  receive the generic-arbitrage economics response.
+
+### Quality
+- Completed automated QA for arbitrage calculations, dispensary workflows, and clinical AI fallback
+  guidance (25 passing tests).
+- Completed TypeScript, production-build, and manual accessibility checks.
+
 ## [0.2.0] — 2026-09-08
 
 ### Added
